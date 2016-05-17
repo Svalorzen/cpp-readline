@@ -84,12 +84,10 @@ namespace CppReadline {
              */
             int readLine();
         private:
-            Console(Console const&) = delete;
+            Console(const Console&) = delete;
             Console(Console&&) = delete;
-            Console&
-            operator = (Console const&) = delete;
-            Console&
-            operator = (Console&&) = delete;
+            Console& operator = (Console const&) = delete;
+            Console& operator = (Console&&) = delete;
 
             using RegisteredCommands = std::unordered_map<std::string,CommandFunction>;
 
