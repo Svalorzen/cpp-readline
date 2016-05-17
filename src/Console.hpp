@@ -11,7 +11,7 @@ namespace CppReadline {
         public:
             /**
              * @brief This is the function type that is used to interface with the Console class.
-             * 
+             *
              * These are the functions that are going to get called by Console when the user
              * types in a message. The vector will hold the command elements, and the function
              * needs to return its result. The result can either be OK (0), or an arbitrary error
@@ -36,7 +36,7 @@ namespace CppReadline {
 
             /**
              * @brief Basic destructor.
-             * 
+             *
              * Frees the history which is been produced by GNU readline.
              */
             ~Console();
@@ -67,7 +67,7 @@ namespace CppReadline {
 
             /**
              * @brief This function calls an external script and executes all commands inside.
-             * 
+             *
              * This function stops execution as soon as any single command returns something
              * different from 0, be it a quit code or an error code.
              *
@@ -84,6 +84,13 @@ namespace CppReadline {
              */
             int readLine();
         private:
+            Console(Console const&) = delete;
+            Console(Console&&) = delete;
+            Console&
+            operator = (Console const&) = delete;
+            Console&
+            operator = (Console&&) = delete;
+
             using RegisteredCommands = std::unordered_map<std::string,CommandFunction>;
 
             std::string greeting_;
