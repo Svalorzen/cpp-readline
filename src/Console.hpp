@@ -4,7 +4,7 @@
 #include <functional>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <memory>
 
 namespace CppReadline {
     class Console {
@@ -32,7 +32,7 @@ namespace CppReadline {
              *
              * @param greeting This represents the prompt of the Console.
              */
-            Console(std::string greeting);
+            explicit Console(std::string const& greeting);
 
             /**
              * @brief Basic destructor.
@@ -89,12 +89,9 @@ namespace CppReadline {
             Console& operator = (Console const&) = delete;
             Console& operator = (Console&&) = delete;
 
-            using RegisteredCommands = std::unordered_map<std::string,CommandFunction>;
-
-            std::string greeting_;
-            RegisteredCommands commands_;
-            // This is just to avoid importing library names in here
-            void * history_;
+            struct Impl;
+            using PImpl = ::std::unique_ptr<Impl>;
+            PImpl pimpl_;
 
             /**
              * @brief This function saves the current state so that some other Console can make use of the GNU readline facilities.
@@ -104,8 +101,6 @@ namespace CppReadline {
              * @brief This function reserves the use of the GNU readline facilities to the calling Console instance.
              */
             void reserveConsole();
-            static Console * currentConsole_;
-            static void * emptyHistory_;
 
             // GNU newline interface to our commands.
             using commandCompleterFunction = char**(const char * text, int start, int end);

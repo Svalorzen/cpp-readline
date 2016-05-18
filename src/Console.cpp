@@ -6,76 +6,95 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <unordered_map>
 
 #include <cstdlib>
 #include <readline/readline.h>
 #include <readline/history.h>
 
 namespace CppReadline {
-    Console * Console::currentConsole_  = nullptr;
-    void * Console::emptyHistory_       = static_cast<void*>(history_get_history_state());
+    namespace {
+
+        Console* _currentConsole        = nullptr;
+        HISTORY_STATE* _emptyHistory    = history_get_history_state();
+
+    }  /* namespace  */
+
+    struct Console::Impl {
+        using RegisteredCommands = std::unordered_map<std::string,Console::CommandFunction>;
+
+        ::std::string       greeting_;
+        // These are hardcoded commands. They do not do anything and are catched manually in the executeCommand function.
+        RegisteredCommands  commands_   = { {"quit", {}}, {"exit", {}} };
+        HISTORY_STATE*      history_    = nullptr;
+
+        Impl(::std::string const& greeting) : greeting_{greeting} {}
+        ~Impl() {
+            free(history_);
+        }
+
+        Impl(Impl const&) = delete;
+        Impl(Impl&&) = delete;
+        Impl& operator = (Impl const&) = delete;
+        Impl& operator = (Impl&&) = delete;
+    };
 
     // Here we set default commands, they do nothing since we quit with them
     // Quitting behaviour is hardcoded in readLine()
-    Console::Console(std::string greeting) : greeting_(greeting),
-
-    // These are hardcoded commands. They do not do anything and are catched manually in the executeCommand function.
-    commands_({   {"quit",{}}, {"exit",{}}   }),
-    history_(nullptr)
+    Console::Console(std::string const& greeting)
+        : pimpl_{ new Impl{ greeting } }
     {
         // Init readline basics
         rl_attempted_completion_function = &Console::getCommandCompletions;
         // These are other two hardcoded commands, but they are more readable
         // here rather than in the initialization list.
         // Help command lists available commands.
-        commands_["help"] = [this](const std::vector<std::string>&){
+        pimpl_->commands_["help"] = [this](const std::vector<std::string>&){
             auto commands = getRegisteredCommands();
             std::cout << "Available commands are:\n";
             for ( auto & command : commands ) std::cout << "\t" << command << "\n";
             return 0;
         };
         // Run command executes all commands in an external file.
-        commands_["run"] =  [this](const std::vector<std::string>& input) {
+        pimpl_->commands_["run"] =  [this](const std::vector<std::string>& input) {
             if ( input.size() < 2 ) { std::cout << "Usage: " << input[0] << " script_filename\n"; return 1; }
             return executeFile(input[1]);
         };
     }
 
-    Console::~Console() {
-        free(history_);
-    }
+    Console::~Console() = default;
 
     void Console::registerCommand(const std::string & s, CommandFunction f) {
-        commands_[s] = f;
+        pimpl_->commands_[s] = f;
     }
 
     std::vector<std::string> Console::getRegisteredCommands() const {
         std::vector<std::string> allCommands;
-        for ( auto & pair : commands_ ) allCommands.push_back(pair.first);
+        for ( auto & pair : pimpl_->commands_ ) allCommands.push_back(pair.first);
 
         return allCommands;
     }
 
     void Console::saveState() {
-        free(history_);
-        history_ = static_cast<void*>(history_get_history_state());
+        free(pimpl_->history_);
+        pimpl_->history_ = history_get_history_state();
     }
 
     void Console::reserveConsole() {
-        if ( currentConsole_ == this ) return;
+        if ( _currentConsole == this ) return;
 
         // Save state of other Console
-        if ( currentConsole_ )
-            currentConsole_->saveState();
+        if ( _currentConsole )
+            _currentConsole->saveState();
 
         // Else we swap state
-        if ( ! history_ )
-            history_set_history_state(static_cast<HISTORY_STATE*>(emptyHistory_));
+        if ( ! pimpl_->history_ )
+            history_set_history_state(_emptyHistory);
         else
-            history_set_history_state(static_cast<HISTORY_STATE*>(history_));
+            history_set_history_state(pimpl_->history_);
 
         // Tell others we are using the console
-        currentConsole_ = this;
+        _currentConsole = this;
     }
 
     int Console::executeCommand(const std::string & command) {
@@ -91,8 +110,8 @@ namespace CppReadline {
         if ( inputs.size() == 0 ) return ReturnCode::Ok;
         if ( inputs[0] == "quit" || inputs[0] == "exit" ) return ReturnCode::Quit;
 
-        RegisteredCommands::iterator it;
-        if ( ( it = commands_.find(inputs[0]) ) != end(commands_) ) {
+        Impl::RegisteredCommands::iterator it;
+        if ( ( it = pimpl_->commands_.find(inputs[0]) ) != end(pimpl_->commands_) ) {
             return static_cast<int>((it->second)(inputs));
         }
 
@@ -124,7 +143,7 @@ namespace CppReadline {
     int Console::readLine() {
         reserveConsole();
 
-        char * buffer = readline(greeting_.c_str());
+        char * buffer = readline(pimpl_->greeting_.c_str());
         if ( !buffer ) {
             std::cout << '\n'; // EOF doesn't put last endline so we put that so that it looks uniform.
             return ReturnCode::Quit;
@@ -150,12 +169,14 @@ namespace CppReadline {
     }
 
     char * Console::commandIterator(const char * text, int state) {
-        static RegisteredCommands::iterator it;
-        auto & commands_ = currentConsole_->commands_;
+        static Impl::RegisteredCommands::iterator it;
+        if (!_currentConsole)
+            return nullptr;
+        auto& commands = _currentConsole->pimpl_->commands_;
 
-        if ( state == 0 ) it = begin(commands_);
+        if ( state == 0 ) it = begin(commands);
 
-        while ( it != end(commands_ ) ) {
+        while ( it != end(commands) ) {
             auto & command = it->first;
             ++it;
             if ( command.find(text) != std::string::npos ) {
