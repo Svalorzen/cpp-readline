@@ -15,8 +15,8 @@
 namespace CppReadline {
     namespace {
 
-        Console* _currentConsole        = nullptr;
-        HISTORY_STATE* _emptyHistory    = history_get_history_state();
+        Console* currentConsole         = nullptr;
+        HISTORY_STATE* emptyHistory     = history_get_history_state();
 
     }  /* namespace  */
 
@@ -81,20 +81,20 @@ namespace CppReadline {
     }
 
     void Console::reserveConsole() {
-        if ( _currentConsole == this ) return;
+        if ( currentConsole == this ) return;
 
         // Save state of other Console
-        if ( _currentConsole )
-            _currentConsole->saveState();
+        if ( currentConsole )
+            currentConsole->saveState();
 
         // Else we swap state
         if ( ! pimpl_->history_ )
-            history_set_history_state(_emptyHistory);
+            history_set_history_state(emptyHistory);
         else
             history_set_history_state(pimpl_->history_);
 
         // Tell others we are using the console
-        _currentConsole = this;
+        currentConsole = this;
     }
 
     int Console::executeCommand(const std::string & command) {
@@ -170,9 +170,9 @@ namespace CppReadline {
 
     char * Console::commandIterator(const char * text, int state) {
         static Impl::RegisteredCommands::iterator it;
-        if (!_currentConsole)
+        if (!currentConsole)
             return nullptr;
-        auto& commands = _currentConsole->pimpl_->commands_;
+        auto& commands = currentConsole->pimpl_->commands_;
 
         if ( state == 0 ) it = begin(commands);
 
