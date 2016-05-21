@@ -16,6 +16,7 @@ The main features of this library are:
 - Can run files containing lists of commands automatically.
 - Multiple separate Consoles can be run at the same time, bypassing the readline
   library global state.
+- Currently NOT thread-safe.
 
 Requirements
 ============
