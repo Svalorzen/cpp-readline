@@ -17,7 +17,7 @@ unsigned info(const std::vector<std::string> &) {
 unsigned calc(const std::vector<std::string> & input) {
     if ( input.size() != 4 ) {
         // The first element of the input array is always the name of the
-        // command as registered in the console. 
+        // command as registered in the console.
         std::cout << "Usage: " << input[0] << " num1 operator num2\n";
         // We can return an arbitrary error code, which we can catch later
         // as Console will return it.
@@ -72,9 +72,10 @@ int main() {
     // (be it empty or not) is treated as a separate command. The execution is stopped
     // as soon as any command returns an error.
     c.executeFile("exampleScript");
-            
-    // This basic loops continues to read input from the user until one of the default
-    // quitting commands ("quit" or "exit") is entered, then terminates.
+
+    // This basic loops continues to read input from the user until a command returns
+    // the termination code (ret::Quit). Here it would be one of the default
+    // quitting commands ("quit" or "exit").
     /*
      * while ( c.readLine() != ret::Quit );
      */
@@ -84,7 +85,7 @@ int main() {
     do {
         retCode = c.readLine();
         if ( retCode == 1 ) {
-            std::cout << "Received error code 1\n"; 
+            std::cout << "Received error code 1\n";
         }
         else if ( retCode == 2 ) {
             std::cout << "Received error code 2\n";

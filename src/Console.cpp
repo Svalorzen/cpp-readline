@@ -25,7 +25,7 @@ namespace CppReadline {
 
         ::std::string       greeting_;
         // These are hardcoded commands. They do not do anything and are catched manually in the executeCommand function.
-        RegisteredCommands  commands_   = { {"quit", {}}, {"exit", {}} };
+        RegisteredCommands  commands_   = {};
         HISTORY_STATE*      history_    = nullptr;
 
         Impl(::std::string const& greeting) : greeting_{greeting} {}
@@ -46,19 +46,27 @@ namespace CppReadline {
     {
         // Init readline basics
         rl_attempted_completion_function = &Console::getCommandCompletions;
-        // These are other two hardcoded commands, but they are more readable
-        // here rather than in the initialization list.
+
+        // These are default hardcoded commands.
         // Help command lists available commands.
-        pimpl_->commands_["help"] = [this](const std::vector<std::string>&){
+        pimpl_->commands_["help"] = [this](const Arguments &){
             auto commands = getRegisteredCommands();
             std::cout << "Available commands are:\n";
             for ( auto & command : commands ) std::cout << "\t" << command << "\n";
-            return 0;
+            return ReturnCode::Ok;
         };
         // Run command executes all commands in an external file.
-        pimpl_->commands_["run"] =  [this](const std::vector<std::string>& input) {
+        pimpl_->commands_["run"] =  [this](const Arguments & input) {
             if ( input.size() < 2 ) { std::cout << "Usage: " << input[0] << " script_filename\n"; return 1; }
             return executeFile(input[1]);
+        };
+        // Quit and Exit simply terminate the console.
+        pimpl_->commands_["quit"] = [this](const Arguments &) {
+            return ReturnCode::Quit;
+        };
+
+        pimpl_->commands_["exit"] = [this](const Arguments &) {
+            return ReturnCode::Quit;
         };
     }
 
@@ -108,7 +116,6 @@ namespace CppReadline {
         }
 
         if ( inputs.size() == 0 ) return ReturnCode::Ok;
-        if ( inputs[0] == "quit" || inputs[0] == "exit" ) return ReturnCode::Quit;
 
         Impl::RegisteredCommands::iterator it;
         if ( ( it = pimpl_->commands_.find(inputs[0]) ) != end(pimpl_->commands_) ) {

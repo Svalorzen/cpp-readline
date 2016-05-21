@@ -12,14 +12,14 @@ namespace CppReadline {
             /**
              * @brief This is the function type that is used to interface with the Console class.
              *
-             * These are the functions that are going to get called by Console when the user
-             * types in a message. The vector will hold the command elements, and the function
-             * needs to return its result. The result can either be OK (0), or an arbitrary error
-             * (>=1). Normal functions cannot directly issue the console to quit, which is a
-             * return code that can only be issued by the 'quit' and 'exit' commands which are
-             * hardcoded in the Console (you can change those in the cpp file).
+             * These are the functions that are going to get called by Console
+             * when the user types in a message. The vector will hold the
+             * command elements, and the function needs to return its result.
+             * The result can either be Quit (-1), OK (0), or an arbitrary
+             * error (>=1).
              */
-            using CommandFunction = std::function<unsigned(const std::vector<std::string> &)>;
+            using Arguments = std::vector<std::string>;
+            using CommandFunction = std::function<int(const Arguments &)>;
 
             enum ReturnCode {
                 Quit = -1,
@@ -29,6 +29,14 @@ namespace CppReadline {
 
             /**
              * @brief Basic constructor.
+             *
+             * The Console comes with two predefined commands: "quit" and
+             * "exit", which both terminate the console, "help" which prints a
+             * list of all registered commands, and "run" which executes script
+             * files.
+             *
+             * These commands can be overridden or unregistered - but remember
+             * to leave at least one to quit ;).
              *
              * @param greeting This represents the prompt of the Console.
              */
@@ -43,6 +51,8 @@ namespace CppReadline {
 
             /**
              * @brief This function registers a new command within the Console.
+             *
+             * If the command already existed, it overwrites the previous entry.
              *
              * @param s The name of the command as inserted by the user.
              * @param f The function that will be called once the user writes the command.
