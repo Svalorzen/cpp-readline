@@ -67,6 +67,20 @@ namespace CppReadline {
             std::vector<std::string> getRegisteredCommands() const;
 
             /**
+             * @brief Sets the prompt for this Console.
+             *
+             * @param greeting The new greeting.
+             */
+            void setGreeting(const std::string & greeting);
+
+            /**
+             * @brief Gets the current prompt of this Console.
+             *
+             * @return The currently set greeting.
+             */
+            std::string getGreeting() const;
+
+            /**
              * @brief This function executes an arbitrary string as if it was inserted via stdin.
              *
              * @param command The command that needs to be executed.

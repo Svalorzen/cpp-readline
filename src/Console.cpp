@@ -105,6 +105,14 @@ namespace CppReadline {
         currentConsole = this;
     }
 
+    void Console::setGreeting(const std::string & greeting) {
+        pimpl_->greeting_ = greeting;
+    }
+
+    std::string Console::getGreeting() const {
+        return pimpl_->greeting_;
+    }
+
     int Console::executeCommand(const std::string & command) {
         // Convert input to vector
         std::vector<std::string> inputs;

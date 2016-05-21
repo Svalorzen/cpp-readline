@@ -84,6 +84,12 @@ int main() {
     int retCode;
     do {
         retCode = c.readLine();
+        // We can also change the prompt based on last return value:
+        if ( retCode == ret::Ok )
+            c.setGreeting(">");
+        else
+            c.setGreeting("!>");
+
         if ( retCode == 1 ) {
             std::cout << "Received error code 1\n";
         }
