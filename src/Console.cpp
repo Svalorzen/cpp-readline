@@ -25,7 +25,7 @@ namespace CppReadline {
 
         ::std::string       greeting_;
         // These are hardcoded commands. They do not do anything and are catched manually in the executeCommand function.
-        RegisteredCommands  commands_   = {};
+        RegisteredCommands  commands_;
         HISTORY_STATE*      history_    = nullptr;
 
         Impl(::std::string const& greeting) : greeting_{greeting} {}
