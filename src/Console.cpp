@@ -28,7 +28,7 @@ namespace CppReadline {
         RegisteredCommands  commands_;
         HISTORY_STATE*      history_    = nullptr;
 
-        Impl(::std::string const& greeting) : greeting_{greeting} {}
+        Impl(::std::string const& greeting) : greeting_(greeting), commands_() {}
         ~Impl() {
             free(history_);
         }
