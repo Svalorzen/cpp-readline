@@ -31,6 +31,15 @@ This repository includes a very simple makefile to build the provided example,
 but since the library is a single class you can simply include it directly into
 your project and compile it with the rest, without creating a library file.
 
+Otherwise the repository also has supporto for CMake, if you need to integrate
+that with your existing build. To build the project using CMake, just do the 
+following in the project root directory:
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+
 The makefile default compiler is g++, if you are using a different compiler
 simply change the parameters to suit you (or compile manually, it's really just
 three files).
