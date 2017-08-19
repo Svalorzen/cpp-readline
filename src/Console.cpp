@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include <cstdlib>
+#include <cstring>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -195,9 +196,7 @@ namespace CppReadline {
             auto & command = it->first;
             ++it;
             if ( command.find(text) != std::string::npos ) {
-                char * completion = new char[command.size()];
-                strcpy(completion, command.c_str());
-                return completion;
+                return strdup(command.c_str());
             }
         }
         return nullptr;
